@@ -1,0 +1,92 @@
+group 'com.example.flutter_facetec_sdk'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.1.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+
+//        // Reference local .aar file if it doesn't exist in maven
+//        flatDir{
+//            dirs project(':flutter_facetec_sdk').file('libs')
+//        }
+//
+//        println "allprojects: " + project(':flutter_facetec_sdk').file('libs')
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+
+        //Add this below <plugin_name> is whatever your plugin is called eg. url_launcher
+        flatDir{
+            dirs project(':flutter_facetec_sdk').file('libs')
+        }
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 31
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+    }
+
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
+
+    dependencies {
+//        api(name: 'facetecsdk', ext: 'aar')
+        testImplementation 'org.jetbrains.kotlin:kotlin-test'
+        testImplementation 'org.mockito:mockito-core:5.0.0'
+        implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+//        implementation 'com.facetec:facetec-sdk-9.6.41@aar'
+//        implementation files('libs/facetec-sdk-9.6.41.aar')
+        implementation (name: 'facetec-sdk-9.6.41', ext: 'aar')
+    }
+}
