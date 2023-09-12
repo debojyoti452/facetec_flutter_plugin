@@ -1,10 +1,14 @@
 package com.example.flutter_facetec_sdk
 
+import android.app.Activity
+import android.content.Intent
+import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import android.util.Log
 import androidx.annotation.NonNull
 import com.example.flutter_facetec_sdk.facetec.Config
 import com.example.flutter_facetec_sdk.facetec.LivenessCheckProcessor
 import com.example.flutter_facetec_sdk.facetec.NetworkingHelpers
+import com.example.flutter_facetec_sdk.facetec.Processor
 import com.facetec.sdk.FaceTecSDK
 import com.facetec.sdk.FaceTecSDK.InitializeCallback
 
@@ -15,6 +19,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Request
@@ -24,7 +29,8 @@ import org.json.JSONObject
 import java.io.IOException
 
 /** FlutterFacetecSdkPlugin */
-class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
+    PluginRegistry.ActivityResultListener {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -32,6 +38,7 @@ class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware 
     private lateinit var channel: MethodChannel
     private lateinit var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding
     private lateinit var activityPluginBinding: ActivityPluginBinding
+    private var latestProcessor: Processor? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.flutterPluginBinding = flutterPluginBinding
@@ -41,18 +48,36 @@ class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware 
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         this.activityPluginBinding = binding
+        binding.addActivityResultListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-
+        activityPluginBinding = null!!
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activityPluginBinding = binding
+        binding.addActivityResultListener(this)
     }
 
     override fun onDetachedFromActivity() {
+        activityPluginBinding = null!!
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == 1002 && resultCode == Activity.RESULT_OK) {
+            if (latestProcessor != null) {
+                return if (latestProcessor?.isSuccess == true) {
+                    channel.invokeMethod("onFaceVerifyResponse", true)
+                    true
+                } else {
+                    channel.invokeMethod("onFaceVerifyResponse", false)
+                    false
+                }
+            }
+        }
+
+        return false
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -84,7 +109,11 @@ class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware 
                                     "FaceTec SDK initialization was unsuccessful."
                                 )
 
-                                Log.d("FaceTecSDKSampleApp", FaceTecSDK.getStatus(flutterPluginBinding.applicationContext).toString())
+                                Log.d(
+                                    "FaceTecSDKSampleApp",
+                                    FaceTecSDK.getStatus(flutterPluginBinding.applicationContext)
+                                        .toString()
+                                )
                             }
                         }
                     })
@@ -107,14 +136,13 @@ class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware 
         getSessionToken(object : SessionTokenCallback {
             override fun onSessionTokenReceived(sessionToken: String?) {
                 println("sessionToken: $sessionToken")
-                val processor =
-                    LivenessCheckProcessor(sessionToken, activityPluginBinding.activity)
-                println("processor: ${processor.isSuccess}")
+                latestProcessor =
+                    LivenessCheckProcessor(sessionToken, activityPluginBinding.activity, channel)
             }
         })
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
 
@@ -163,9 +191,9 @@ class FlutterFacetecSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware 
                         "FaceTecSDKSampleApp",
                         "Exception raised while attempting to parse JSON result."
                     )
-
                 }
             }
         })
     }
+
 }

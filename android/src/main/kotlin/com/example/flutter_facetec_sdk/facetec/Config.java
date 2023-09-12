@@ -31,14 +31,14 @@ public class Config {
     // Please see https://dev.facetec.com/facemap-encryption-keys for more information.
     // NOTE: This field is auto-populated by the FaceTec SDK Configuration Wizard.
     static String PublicFaceScanEncryptionKey = "-----BEGIN PUBLIC KEY-----\n" +
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApUGYzZUd8HfBi/L+FiGn\n" +
-            "q0YNMOBZPfN6qJC5r4qiTMnpCKkBhxy7UkGIWXGdr459+KeWEeVXi7ao8PpLq73Q\n" +
-            "/55rN6QhTX4Hbxx3BMVtdFtSXGnAWM2ozr+0vBLNG6Wyo1oogeOTUiHZn7yqOuUH\n" +
-            "EaSMUNooN4zo9PuDJ9buMglcQCEblmV2R8dSLK326yypfSIHRE18qfZD8wPpyzXu\n" +
-            "LFzDprptkoa2roMSlM3iP1WSR0L/ZlkuzgN0hOtL+sPUr5SEIBscJjuFkfP7ZYvl\n" +
-            "bj+0aZS5MgA4ZJXHy12TIwrCLA9vinEVJNpUnJr+p/ZXXdzfQHZY3ornYVoKO6eq\n" +
-            "WQIDAQAB\n" +
-            "-----END PUBLIC KEY-----";
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtpo/0K9bzKwtwGZ3lOVP\n" +
+            "tn1LOfT/Ti5cHMHdy7sFDYkppE91doR1++NPuRv4iRZlT+HBaRxL1M6NnfyfbjTA\n" +
+            "T4w+27nDNSVEj2Zo6LeWPdlAH9vNRluF3K7JuvLw8OSRNDHQJNTInHGnWu1UKzcx\n" +
+            "S7uZbEpKgdT5JNyZ/FwzOUzRUmGwLqVQS/Fm2OLnBi3WBSAvoEaxfji+CWzBiduv\n" +
+            "wJFC4/jwB2NuI/bLP7HQNqYVwV8TQtUXZ1fV04OEZd5aTXmSIC97rDzJJdfX/tOE\n" +
+            "COy8SoADSFRmZ43oFyGIj/2RcnUYhaUJcyFznVRMpk69R3AQLVIT16hDMpRxSjvC\n" +
+            "HQIDAQAB\n" +
+            "-----END PUBLIC KEY-----\n";
 
     
     // -------------------------------------

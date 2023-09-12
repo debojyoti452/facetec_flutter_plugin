@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_facetec_sdk_method_channel.dart';
@@ -33,5 +34,9 @@ abstract class FlutterFacetecSdkPlatform extends PlatformInterface {
 
   Future<void> startLiveCheckProcess() {
     throw UnimplementedError('startLiveCheckProcess() has not been implemented.');
+  }
+
+  void setExtrasObserver(Future<void> Function(MethodCall call) nativeObserver) {
+    throw UnimplementedError('setExtrasObserver() has not been implemented.');
   }
 }

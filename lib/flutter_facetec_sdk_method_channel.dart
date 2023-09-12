@@ -27,4 +27,9 @@ class MethodChannelFlutterFacetecSdk extends FlutterFacetecSdkPlatform {
   Future<void> startLiveCheckProcess() {
     return methodChannel.invokeMethod<void>('startLiveCheckProcess');
   }
+
+  @override
+  void setExtrasObserver(Future<void> Function(MethodCall call) nativeObserver) {
+    methodChannel.setMethodCallHandler(nativeObserver);
+  }
 }

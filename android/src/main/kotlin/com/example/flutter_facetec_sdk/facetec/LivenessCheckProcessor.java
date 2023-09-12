@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import io.flutter.plugin.common.MethodChannel;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -31,10 +32,11 @@ import okhttp3.RequestBody;
 // Android Note 2:  Android does not have a onFaceTecSDKCompletelyDone function that you must implement like "Part 10" of iOS and Android Samples.  Instead, onActivityResult is used as the place in code you get control back from the FaceTec SDK.
 public class LivenessCheckProcessor extends Processor implements FaceTecFaceScanProcessor {
     private boolean success = false;
+    private final MethodChannel methodChannel;
 
 
-    public LivenessCheckProcessor(String sessionToken, Context context) {
-
+    public LivenessCheckProcessor(String sessionToken, Context context, MethodChannel methodChannel) {
+        this.methodChannel = methodChannel;
         //
         // Part 1:  Starting the FaceTec Session
         //
@@ -112,10 +114,22 @@ public class LivenessCheckProcessor extends Processor implements FaceTecFaceScan
                 // You may have different paradigms in your own API and are free to customize based on these.
                 //
 
-                String responseString = response.body().string();
-                response.body().close();
+                String responseString = response.body() != null ? response.body().string() : null;
+                if (response.body() != null) {
+                    response.body().close();
+                }
+
                 try {
+                    assert responseString != null;
                     JSONObject responseJSON = new JSONObject(responseString);
+                    Log.d("FaceTecSDKSampleApp", "JSON Response: " + responseJSON);
+
+                    if (responseJSON.getBoolean("error")) {
+                        methodChannel.invokeMethod("onFaceVerifyResponse", false);
+                        faceScanResultCallback.cancel();
+                        return;
+                    }
+
                     boolean wasProcessed = responseJSON.getBoolean("wasProcessed");
                     String scanResultBlob = responseJSON.getString("scanResultBlob");
 
@@ -128,10 +142,12 @@ public class LivenessCheckProcessor extends Processor implements FaceTecFaceScan
 
                         // In v9.2.0+, simply pass in scanResultBlob to the proceedToNextStep function to advance the User flow.
                         // scanResultBlob is a proprietary, encrypted blob that controls the logic for what happens next for the User.
+                        methodChannel.invokeMethod("onFaceVerifyResponse", true);
                         success = faceScanResultCallback.proceedToNextStep(scanResultBlob);
                     }
                     else {
                         // CASE:  UNEXPECTED response from API.  Our Sample Code keys off a wasProcessed boolean on the root of the JSON object --> You define your own API contracts with yourself and may choose to do something different here based on the error.
+                        methodChannel.invokeMethod("onFaceVerifyResponse", false);
                         faceScanResultCallback.cancel();
                     }
                 }
@@ -139,6 +155,7 @@ public class LivenessCheckProcessor extends Processor implements FaceTecFaceScan
                     // CASE:  Parsing the response into JSON failed --> You define your own API contracts with yourself and may choose to do something different here based on the error.  Solid server-side code should ensure you don't get to this case.
                     e.printStackTrace();
                     Log.d("FaceTecSDKSampleApp", "Exception raised while attempting to parse JSON result.");
+                    methodChannel.invokeMethod("onFaceVerifyResponse", false);
                     faceScanResultCallback.cancel();
                 }
             }
@@ -147,6 +164,7 @@ public class LivenessCheckProcessor extends Processor implements FaceTecFaceScan
             public void onFailure(@NonNull Call call, @Nullable IOException e) {
                 // CASE:  Network Request itself is erroring --> You define your own API contracts with yourself and may choose to do something different here based on the error.
                 Log.d("FaceTecSDKSampleApp", "Exception raised while attempting HTTPS call.");
+                methodChannel.invokeMethod("onFaceVerifyResponse", false);
                 faceScanResultCallback.cancel();
             }
         });

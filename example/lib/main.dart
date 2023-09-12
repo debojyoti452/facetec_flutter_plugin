@@ -25,6 +25,21 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     initPlatformState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _flutterFacetecSdkPlugin.setExtrasObserver(listenNativeCalls);
+    });
+  }
+
+  Future<void> listenNativeCalls(MethodCall call) async {
+    log('listenNativeCalls: ${call.method}');
+    switch (call.method) {
+      case 'onFaceVerifyResponse':
+        log('onFaceVerifyResponse called ${call.arguments}');
+        break;
+      default:
+        log('no method handler for method ${call.method}');
+    }
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.

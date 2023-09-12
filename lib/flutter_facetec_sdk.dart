@@ -1,4 +1,6 @@
 
+import 'package:flutter/services.dart';
+
 import 'flutter_facetec_sdk_platform_interface.dart';
 
 class FlutterFacetecSdk {
@@ -12,5 +14,9 @@ class FlutterFacetecSdk {
 
   Future<void> startLiveCheckProcess() {
     return FlutterFacetecSdkPlatform.instance.startLiveCheckProcess();
+  }
+
+  void setExtrasObserver(Future<void> Function(MethodCall call) nativeObserver) {
+    FlutterFacetecSdkPlatform.instance.setExtrasObserver(nativeObserver);
   }
 }
